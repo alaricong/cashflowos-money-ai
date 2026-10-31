@@ -76,7 +76,7 @@ code {
 .app { display: flex; min-height: 100vh; }
 .side { width: 212px; flex-shrink: 0; background: var(--paper-2); border-right: 1px solid var(--line-2); padding: 18px; display: flex; flex-direction: column; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; color: var(--clay-deep); margin-bottom: 22px; }
-.brand .logo { width: 26px; height: 26px; border-radius: var(--r-8); background: var(--clay); display: grid; place-items: center; font-size: 15px; }
+.brand .logo { width: 36px; height: 36px; border-radius: var(--r-8); background: var(--clay); display: block; object-fit: cover; flex-shrink: 0; }
 
 /* sidebar nav, grouped under micro-cap section labels */
 .nav { display: flex; flex-direction: column; gap: 2px; }
