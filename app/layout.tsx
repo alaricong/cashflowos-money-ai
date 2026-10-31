@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: 'CashFlowOS AI Agents 🤖',
   description: 'Your Money Robot — one AI HQ for the whole business.',
   manifest: '/manifest.webmanifest',
+  icons: { icon: '/icons/icon-192.png', apple: '/icons/apple-touch-icon.png' },
   appleWebApp: { capable: true, title: 'CashFlowOS', statusBarStyle: 'default' },
 }
 
@@ -27,7 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <div className="app">
           {/* Desktop sidebar — hidden on phones (BottomNav takes over ≤768px). */}
           <aside className="side">
-            <div className="brand"><span className="logo" aria-hidden="true">🤖</span> CashFlowOS AI Agents</div>
+            <div className="brand"><img className="logo" src="/icons/logo.png" alt="" aria-hidden="true" /> CashFlowOS AI Agents</div>
             <Nav pendingCount={pending} />
             <p className="hint">One <code>records</code> table behind every tab. Your robots live in <code>agents/</code>.</p>
           </aside>
