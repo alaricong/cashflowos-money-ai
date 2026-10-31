@@ -1,5 +1,5 @@
 import 'server-only'
-import Anthropic from '@anthropic-ai/sdk'
+import { chat, openaiKey } from '@/lib/openai'
 
 // 🔒 Don't edit — this keeps your robot safe.
 // ONE vision call. A photo/PDF comes in (base64) and we ask claude-haiku-4-5 to
@@ -31,7 +31,7 @@ function unsure(kind: VisionResult['kind'] = 'doc', missing: string[] = ['amount
 }
 
 export async function readImage(base64: string, mime: string): Promise<VisionResult> {
-  const apiKey = process.env.ANTHROPIC_API_KEY?.trim()
+  const apiKey = openaiKey()
   // No key yet → don't crash, don't spin. Degrade to the calm "unsure" result so
   // the caller shows the friendly "add your key" path and asks before filing.
   if (!apiKey) return unsure()
@@ -54,25 +54,20 @@ export async function readImage(base64: string, mime: string): Promise<VisionRes
 
   let raw = ''
   try {
-    const anthropic = new Anthropic({ apiKey })
-    const res = await anthropic.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 400,                  // a small form — capped so a runaway can't cost much
-      system,
+    const res = await chat({
+      maxTokens: 400,                   // a small form — capped so a runaway can't cost much
       messages: [
+        { role: 'system', content: system },
         {
           role: 'user',
           content: [
-            {
-              type: 'image',
-              source: { type: 'base64', media_type: mediaType as any, data: base64 },
-            },
+            { type: 'image_url', image_url: { url: `data:${mediaType};base64,${base64}` } },
             { type: 'text', text: 'Read this and return the JSON form.' },
           ],
         },
       ],
     })
-    raw = res.content.find(c => c.type === 'text')?.text ?? ''
+    raw = res.content
   } catch (e) {
     console.error('[CFO] vision call failed:', e)
     return unsure()
