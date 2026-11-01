@@ -8,7 +8,7 @@ import type { Rec } from '@/lib/records'
 export type WhenTrigger = 'on_photo' | 'on_new_record' | 'daily'
 
 // The one knob that IS the autonomy dial. Change EXPENSE_APPROVAL_THRESHOLD in your
-// env (default RM200) to slide where 🟢 becomes 🟡 — no code change needed.
+// env (default S$200) to slide where 🟢 becomes 🟡 — no code change needed.
 export function threshold(): number {
   const n = Number(process.env.EXPENSE_APPROVAL_THRESHOLD)
   return Number.isFinite(n) && n > 0 ? n : 200

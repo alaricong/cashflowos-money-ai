@@ -16,6 +16,9 @@ const PRIMARY = [
 
 // Everything not on the bottom bar lives in the More sheet.
 const MORE: MoreTab[] = [
+  { href: '/scoreboard', label: 'Scoreboard', ico: '📊' },
+  { href: '/sales', label: 'Sales (GHL)', ico: '📈' },
+  { href: '/onboarding', label: 'Onboarding', ico: '📝' },
   { href: '/leads', label: 'Leads', ico: '🧲' },
   { href: '/customers', label: 'Customers', ico: '🧑‍🤝‍🧑' },
   { href: '/content', label: 'Content', ico: '📣' },

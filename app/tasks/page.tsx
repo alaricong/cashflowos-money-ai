@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 // flagged as overdue (red). Sorted soonest-due first; undated tasks sink last.
 export default async function Tasks() {
   const today = todayISO()
-  const all = await getRecords()
+  const all = await getRecords(['task'])
   const rows = all
     .filter(r => r.category === 'task')
     .sort((a, b) => ((a.due_date ?? '9999') < (b.due_date ?? '9999') ? -1 : 1))

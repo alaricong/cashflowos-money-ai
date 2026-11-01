@@ -1,4 +1,4 @@
-import { getRecords, getFunnel, rm } from '@/lib/records'
+import { getRecords, getFunnel, getLeadCounts, NON_LEAD, rm } from '@/lib/records'
 import { supabase, supabaseConfigured } from '@/lib/supabase'
 import FunnelBar from '@/app/_components/FunnelBar'
 import Stat from '@/app/_components/Stat'
@@ -18,8 +18,8 @@ async function proposedCount(): Promise<number> {
 }
 
 export default async function Dashboard() {
-  const [rows, waiting] = await Promise.all([getRecords(), proposedCount()])
-  const funnel = getFunnel(rows)
+  const [rows, counts, waiting] = await Promise.all([getRecords(NON_LEAD), getLeadCounts(), proposedCount()])
+  const funnel = getFunnel(rows, counts)
 
   // ── The Money row ───────────────────────────────────────────────
   const sum = (cat: string, statuses?: string[]) =>

@@ -44,14 +44,14 @@ export const BOT_TOOLS = [
     name: 'get_funnel',
     description:
       'The whole-business funnel/pipeline: Views → Leads → Appointments → Closed → Nurture, with ' +
-      'stage-to-stage conversion %, plus total open-pipeline RM value. Use for "how\'s my pipeline?", ' +
+      'stage-to-stage conversion %, plus total open-pipeline SGD value. Use for "how\'s my pipeline?", ' +
       '"pipeline value?", "how many leads / appointments?".',
     input_schema: { type: 'object' as const, properties: {} },
   },
   {
     name: 'list_leads',
     description:
-      'List leads, optionally filtered by stage. Each lead has a deal value (RM), stage, and next step. ' +
+      'List leads, optionally filtered by stage. Each lead has a deal value (SGD), stage, and next step. ' +
       'Use for "show me open leads", "who\'s at appointment stage?", "what did we close?".',
     input_schema: {
       type: 'object' as const,
@@ -111,7 +111,7 @@ export const BOT_TOOLS = [
   {
     name: 'pending_vs_won',
     description:
-      'Money split: RM already won (closed leads + paid cash_in) vs RM still pending (open pipeline + ' +
+      'Money split: SGD already won (closed leads + paid cash_in) vs SGD still pending (open pipeline + ' +
       'unpaid invoices), with counts. Use for "how much is pending vs won?", "what\'s in the pipeline value?".',
     input_schema: { type: 'object' as const, properties: {} },
   },
@@ -168,7 +168,7 @@ export const BOT_TOOLS = [
 ]
 
 const sum = (rows: Rec[]) => rows.reduce((s, r) => s + Number(r.amount || 0), 0)
-const PAID = new Set(['paid', 'done', 'closed', 'reversed'])
+const PAID = new Set(['paid', 'done', 'closed', 'reversed', 'unconfirmed'])
 // A lead that has left the open pipeline (won or dropped) — excluded from pipeline value.
 const CLOSED_LOST = new Set(['closed', 'nurture', 'lost', 'reversed'])
 // Whole days a due date is past today (>=0).

@@ -25,12 +25,12 @@ export const BOT_ACTION_TOOLS = [
     description:
       'Record a business expense (cash out) from what the owner typed (no photo). At or under the ' +
       'auto-file threshold it files itself (🟢, undoable); over it, it asks the owner to approve (🟡). ' +
-      'Use for "log RM45 Grab", "I spent 1200 on Facebook ads".',
+      'Use for "log $45 Grab", "I spent 1200 on Facebook ads".',
     input_schema: {
       type: 'object' as const,
       properties: {
         merchant: { type: 'string', description: 'Who it was paid to (Grab, Adobe, Maybank…).' },
-        amount: { type: 'number', description: 'Amount in RM.' },
+        amount: { type: 'number', description: 'Amount in SGD.' },
         category: { type: 'string', description: 'Optional label (Meals, Software, Ads…).' },
       },
       required: ['merchant', 'amount'],
@@ -55,12 +55,12 @@ export const BOT_ACTION_TOOLS = [
     name: 'add_lead',
     description:
       'Add a new lead to the pipeline. Reversible, so it just does it (🟢) with an /undo. ' +
-      'Use for "add lead Angela, RM8000, ig", "new lead: Koperasi ABC".',
+      'Use for "add lead Angela, $8000, ig", "new lead: Koperasi ABC".',
     input_schema: {
       type: 'object' as const,
       properties: {
         name: { type: 'string', description: 'Lead / person / company name.' },
-        value: { type: 'number', description: 'Optional deal value in RM.' },
+        value: { type: 'number', description: 'Optional deal value in SGD.' },
         stage: {
           type: 'string',
           enum: ['new', 'contacted', 'appointment', 'closed', 'nurture'],
@@ -75,12 +75,12 @@ export const BOT_ACTION_TOOLS = [
     name: 'log_cash_in',
     description:
       'Record money coming IN / an invoice raised. Because it changes the money picture it always ' +
-      'asks first (🟡 Approve). Use for "log RM5000 from Koochester", "invoice ABC 3200".',
+      'asks first (🟡 Approve). Use for "log $5000 from Koochester", "invoice ABC 3200".',
     input_schema: {
       type: 'object' as const,
       properties: {
         source: { type: 'string', description: 'Who it is from / what it is for.' },
-        amount: { type: 'number', description: 'Amount in RM.' },
+        amount: { type: 'number', description: 'Amount in SGD.' },
         customer: { type: 'string', description: 'Optional customer name.' },
       },
       required: ['source', 'amount'],
@@ -167,7 +167,7 @@ export async function runBotAction(name: string, input: any, ctx: BotActionCtx):
       }
       const row = await proposeAndNotify({
         agentKey: 'expense', idempotencyKey: payload.idempotencyKey, payload, chatId,
-        text: `🧾 Log expense <b>${rm(amount)}</b>${merchant ? ` · ${merchant}` : ''}? That is over your RM${thresholdRM} auto-file limit.`,
+        text: `🧾 Log expense <b>${rm(amount)}</b>${merchant ? ` · ${merchant}` : ''}? That is over your S$${thresholdRM} auto-file limit.`,
       })
       return JSON.stringify(
         row

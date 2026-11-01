@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic'
 const WAITING = ['waiting', 'unpaid', 'overdue', 'pending']
 
 export default async function CashIn() {
-  const all = await getRecords()
+  const all = await getRecords(['cash_in'])
   const rows = all.filter(r => r.category === 'cash_in')
 
   const isWaiting = (r: (typeof rows)[number]) => WAITING.includes((r.status || '').toLowerCase())
@@ -24,8 +24,17 @@ export default async function CashIn() {
   const paid = rows.filter(r => !isWaiting(r)).reduce((s, r) => s + Number(r.amount || 0), 0)
   const waiting = rows.filter(isWaiting).reduce((s, r) => s + Number(r.amount || 0), 0)
 
-  // Show the money still waiting first (that's what needs chasing), then the rest.
-  const sorted = [...rows].sort((a, b) => Number(isWaiting(b)) - Number(isWaiting(a)))
+  // Show the money still waiting first (oldest due date = chase first), then the
+  // newest paid rows. Capped — the Sheets import brings in years of history.
+  const SHOW = 300
+  const sorted = [...rows]
+    .sort((a, b) =>
+      Number(isWaiting(b)) - Number(isWaiting(a)) ||
+      (isWaiting(a)
+        ? (a.due_date || '9999').localeCompare(b.due_date || '9999')
+        : (b.due_date || '').localeCompare(a.due_date || '')),
+    )
+    .slice(0, SHOW)
 
   return (
     <>
@@ -61,7 +70,12 @@ export default async function CashIn() {
               const shownStatus = overdue ? 'overdue' : (r.status || '—')
               return (
                 <tr key={r.id}>
-                  <td data-label="What">{r.title}</td>
+                  <td data-label="What">
+                    {r.title}
+                    {r.meta?.needs_review && (
+                      <span className="pill pending" title={`Check the Sheet: "${r.meta.original ?? ''}"`}> check</span>
+                    )}
+                  </td>
                   <td data-label="From">{m(r, 'customer')}</td>
                   <td data-label="Status">
                     <span className={`pill ${shownStatus}`}>{shownStatus}</span>

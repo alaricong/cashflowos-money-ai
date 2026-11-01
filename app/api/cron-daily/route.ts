@@ -1,7 +1,9 @@
 import { chat, openaiKey } from '@/lib/openai'
+import { ghlConfigured, syncGhl } from '@/lib/ghl'
+import { sheetsConfigured, syncSheets } from '@/lib/sheets'
 import { supabase, supabaseConfigured } from '@/lib/supabase'
 import { sendMessage } from '@/lib/telegram'
-import { getRecords, getFunnel, rm, todayISO, type Rec } from '@/lib/records'
+import { getRecords, getFunnel, getLeadCounts, NON_LEAD, rm, todayISO, type Rec } from '@/lib/records'
 import { propose, proposeAndNotify, runAutopilot } from '@/lib/actions'
 import { SCHEDULED, type ProposalDraft } from '@/agents/registry'
 
@@ -20,7 +22,7 @@ import { SCHEDULED, type ProposalDraft } from '@/agents/registry'
 // ?preview guard on this executing path — soft guards are for read-only previews only.
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 60
+export const maxDuration = 300
 
 // Who receives the brief: your team's numeric Telegram ids (comma-separated), or
 // OWNER_CHAT_ID as the solo fallback. None set = nobody (the brief just no-ops).
@@ -36,7 +38,8 @@ function recipients(): string[] {
 }
 
 const sum = (rows: Rec[]) => rows.reduce((s, r) => s + Number(r.amount || 0), 0)
-const PAID = new Set(['paid', 'done', 'closed', 'reversed'])
+// 'unconfirmed' = an old imported instalment nobody has confirmed — not counted as owed.
+const PAID = new Set(['paid', 'done', 'closed', 'reversed', 'unconfirmed'])
 
 export async function GET(req: Request) {
   // ---- FAIL-CLOSED Bearer. Unset secret ⇒ 401 (never open). ----
@@ -45,7 +48,39 @@ export async function GET(req: Request) {
   if (!authed) return new Response('forbidden', { status: 401 })
 
   const today = todayISO()
-  const rows = await getRecords()
+
+  // ⓪ Pull the latest from GoHighLevel first (bounded so the brief still sends).
+  let ghlLine = ''
+  if (ghlConfigured()) {
+    try {
+      await syncGhl(25_000)
+      const { data: g } = await supabase.rpc('ghl_summary', {
+        p_from: new Date(Date.now() - 86400_000).toISOString(),
+        p_pipeline: null,
+      })
+      if (g) {
+        ghlLine =
+          `\n\n📈 <b>GHL · last 24h</b>\n` +
+          `${g.leads} leads · ${g.booked} calls held · ${g.showed} showed · ${g.no_shows} no-show · ` +
+          `${g.sales} sales · cash <b>${rm(Math.round(g.cash_sgd))}</b> (${g.payments} payments)`
+      }
+    } catch (e) {
+      console.error('[CFO] GHL sync in cron failed:', e)
+    }
+  }
+
+  // ⓪b Pull new rows from your Google Sheets (insert-only, bounded).
+  let sheetsLine = ''
+  if (sheetsConfigured()) {
+    try {
+      const s = await syncSheets(150_000)
+      sheetsLine = `\n\n📄 <b>Sheets</b> · ${s.added} new rows${s.ok ? '' : ' · ⚠️ some tabs failed (check the app)'}`
+    } catch (e) {
+      console.error('[CFO] Sheets sync in cron failed:', e)
+    }
+  }
+
+  const [rows, leadCounts] = await Promise.all([getRecords(NON_LEAD), getLeadCounts()])
 
   // ① THE MONEY ROW (mirrors the Dashboard).
   const cashIn = sum(rows.filter((r) => r.category === 'cash_in'))
@@ -53,7 +88,7 @@ export async function GET(req: Request) {
   const owed = sum(rows.filter((r) => r.category === 'cash_in' && !PAID.has((r.status || '').toLowerCase())))
 
   // ① THE FUNNEL (the whole-business river) — same aggregator the Dashboard uses.
-  const f = getFunnel(rows)
+  const f = getFunnel(rows, leadCounts)
 
   // ① THE 🙋 COUNT + LIST — proposals still waiting on a human YES.
   let proposed: { agent_key: string; payload: any }[] = []
@@ -72,7 +107,7 @@ export async function GET(req: Request) {
   let narrative: string | null = null
   if (openaiKey()) narrative = await chiefOfStaff(rows, today)
 
-  const message = `${brief}${narrative ? `\n\n🐱 <b>Jarvis Oyen</b>\n${narrative}` : ''}`
+  const message = `${brief}${ghlLine}${sheetsLine}${narrative ? `\n\n🐱 <b>Jarvis Oyen</b>\n${narrative}` : ''}`
 
   // Send the brief.
   const to = recipients()

@@ -70,7 +70,7 @@ const HELP_CARD =
   `📣 <b>Content</b> — "what's scheduled?"\n` +
   `🤝 <b>People</b> — "who do I follow up with?" · "draft a follow-up for Angela"\n` +
   `🚨 <b>Triage</b> — "what needs my attention today?"\n\n` +
-  `I can also <b>DO</b> things — "log RM45 Grab", "add task chase supplier Friday", ` +
+  `I can also <b>DO</b> things — "log $45 Grab", "add task chase supplier Friday", ` +
   `"add lead Angela 8000", "mark ABC invoice paid", "move Koochester to appointment".\n` +
   `Small stuff I just do (reply <code>/undo-&lt;id&gt;</code> to reverse). Money stuff I propose ` +
   `and YOU tap ✅ Approve. I never message your customers.`
@@ -594,7 +594,7 @@ function buildProposalText(v: VisionResult, limit: number): string {
   if (typeof v.amount === 'number' && v.amount > 0) {
     return (
       `🧾 Receipt read: <b>${amt}</b>${bits ? ` · ${bits}` : ''}. ` +
-      `That's over your RM${limit} auto-file limit — file it to Cash Out?`
+      `That's over your S$${limit} auto-file limit — file it to Cash Out?`
     )
   }
   return `🗂️ Looks like a document${v.merchant ? ` from ${v.merchant}` : ''}. File it to your Vault?`

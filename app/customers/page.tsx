@@ -15,7 +15,7 @@ function owes(r: Rec): number {
 }
 
 export default async function Customers() {
-  const rows = await getRecords()
+  const rows = await getRecords(['customer'])
   const customers = rows.filter(r => r.category === 'customer')
 
   // Sort the ones who owe money to the top — that's what needs a nudge.
@@ -39,7 +39,7 @@ export default async function Customers() {
             </tr>
           </thead>
           <tbody>
-            {customers.map(r => {
+            {customers.slice(0, 300).map(r => {
               const owed = owes(r)
               return (
                 <tr key={r.id}>

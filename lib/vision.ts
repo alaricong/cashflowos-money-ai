@@ -20,7 +20,7 @@ export type VisionResult = {
 // Telegram/photo MIME types Claude vision accepts. Anything else → treat as a doc.
 const VISION_MIME = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
 
-// Server-side clamp: never trust a model-supplied amount. Keep it a sane RM value.
+// Server-side clamp: never trust a model-supplied amount. Keep it a sane money value.
 const AMOUNT_MIN = 0
 const AMOUNT_MAX = 1_000_000
 
@@ -44,7 +44,7 @@ export async function readImage(base64: string, mime: string): Promise<VisionRes
   const system =
     `You are a receipt/invoice reader. Look at the image and return ONLY a JSON object ` +
     `(no prose, no markdown) with these keys: ` +
-    `kind ("receipt" | "invoice" | "doc"), merchant (string), amount (number, the TOTAL in RM, digits only), ` +
+    `kind ("receipt" | "invoice" | "doc"), merchant (string), amount (number, the TOTAL amount, digits only), ` +
     `date ("YYYY-MM-DD"), category (short expense category e.g. "Meals","Transport","Software"), ` +
     `confidence ("high" | "low"), missing (array of any of "merchant","amount","date" you could NOT read clearly). ` +
     `If it is not a receipt or invoice, use kind "doc". If unsure about the total, set confidence "low". ` +
@@ -91,7 +91,7 @@ export async function readImage(base64: string, mime: string): Promise<VisionRes
     ? parsed.missing.filter((x: any) => typeof x === 'string')
     : []
 
-  // Amount: coerce to a number, strip anything non-numeric, clamp to sane RM bounds.
+  // Amount: coerce to a number, strip anything non-numeric, clamp to sane money bounds.
   let amount: number | undefined
   const n = typeof parsed.amount === 'number'
     ? parsed.amount

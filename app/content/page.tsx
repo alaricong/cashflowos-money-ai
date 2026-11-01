@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 // all live here — the kind is in `meta.format`, the channel in `meta.platform`.
 // A content item moves draft → scheduled → posted (its `status`).
 export default async function Content() {
-  const all = await getRecords()
+  const all = await getRecords(['content'])
   const rows = all
     .filter(r => r.category === 'content')
     // Soonest date first; undated rows sink to the bottom.

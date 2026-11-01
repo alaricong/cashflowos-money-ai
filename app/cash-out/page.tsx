@@ -9,7 +9,7 @@ import Stat from '@/app/_components/Stat'
 export const dynamic = 'force-dynamic'
 
 export default async function CashOut() {
-  const all = await getRecords()
+  const all = await getRecords(['cash_out'])
   const rows = all.filter(r => r.category === 'cash_out')
 
   const total = rows.reduce((s, r) => s + Number(r.amount || 0), 0)

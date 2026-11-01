@@ -28,7 +28,7 @@ export const JARVIS = {
   /** How Jarvis should talk to you. Keep it short. */
   voice: 'Short, warm and direct. No corporate fluff.',
   /** Your money symbol. */
-  currency: 'RM',
+  currency: 'SGD',
 
   // ── 👉 WATCH ──────────────────────────────────────────────────────────────
   /**
